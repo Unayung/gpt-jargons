@@ -1,0 +1,27 @@
+service: gpt-jargons
+image: unayung/gpt-jargons
+
+servers:
+  web:
+    hosts:
+      - 172.233.78.91
+
+proxy:
+  ssl: true
+  host: gpt.ccy.works
+  app_port: 80
+
+registry:
+  server: ghcr.io
+  username: unayung
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: apps
+  keys:
+    - ~/.ssh/id_ed25519_unayung
+
+builder:
+  arch: amd64
+  remote: ssh://apps@172.233.78.91
