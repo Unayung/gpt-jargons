@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你還能聽懂人話嗎？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #181818;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --red: #ff4747;
+    --text: #f0f0f0;
+    --muted: #666;
+    --correct: #47ff8a;
+    --wrong: #ff4747;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  #hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      #ffffff08 39px,
+      #ffffff08 40px
+    );
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    border: 1px solid var(--accent);
+    padding: 0.3em 0.9em;
+    display: inline-block;
+  }
+
+  .hero-title {
+    font-size: clamp(2.8rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    position: relative;
+  }
+
+  .hero-sub {
+    font-size: clamp(0.95rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .hero-sub em {
+    color: var(--text);
+    font-style: normal;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .btn-start {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1em 2.5em;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: transform 0.15s, box-shadow 0.15s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  }
+
+  .btn-start:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px #e8ff4755;
+  }
+
+  .sample-jargons {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 700px;
+    opacity: 0.35;
+  }
+
+  .sample-jargons span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    border: 1px solid var(--muted);
+    padding: 0.2em 0.6em;
+    color: var(--muted);
+  }
+
+  /* ── QUIZ ─────────────────────────────────────── */
+  #quiz {
+    display: none;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .quiz-header {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .quiz-progress {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .quiz-progress strong {
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    max-width: 760px;
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .quiz-question {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-prompt {
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    line-height: 1.4;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .choice-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 2rem 1.5rem;
+    cursor: pointer;
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    line-height: 1.7;
+    text-align: center;
+    transition: border-color 0.15s, transform 0.15s, background 0.15s;
+    position: relative;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    background: #1e1e1e;
+  }
+
+  .choice-btn .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .choice-btn.correct {
+    border-color: var(--correct);
+    background: #47ff8a12;
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--wrong);
+    background: #ff474712;
+  }
+
+  .choice-btn.reveal-correct {
+    border-color: var(--correct);
+    background: #47ff8a08;
+  }
+
+  .choice-btn:disabled {
+    cursor: not-allowed;
+  }
+
+  .feedback {
+    margin-top: 2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    text-align: center;
+    height: 2em;
+    transition: opacity 0.3s;
+  }
+
+  .feedback.good { color: var(--correct); }
+  .feedback.bad  { color: var(--wrong); }
+
+  .btn-next {
+    margin-top: 2.5rem;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.7em 2em;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s;
+    display: none;
+  }
+
+  .btn-next:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  /* ── RESULT ───────────────────────────────────── */
+  #result {
+    display: none;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  #score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 3rem 2.5rem;
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+  }
+
+  #score-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .score-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .score-number {
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .score-total {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .score-verdict {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+
+  .score-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .btn-share {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.8em 1.8em;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: transform 0.15s;
+  }
+
+  .btn-share:hover { transform: translateY(-2px); }
+
+  .btn-retry {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.8em 1.8em;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: border-color 0.15s;
+  }
+
+  .btn-retry:hover { border-color: var(--text); }
+
+  .watermark {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 2.5rem;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 560px) {
+    .choices { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-eyebrow">A totally normal language test</div>
+  <h1 class="hero-title">GPT 學會<br><span>說人話了嗎？</span></h1>
+  <p class="hero-sub">
+    某些 AI 不知道從哪裡學到了一套說話方式——每句話都很長、聽起來很專業，但說完之後你不確定它到底說了什麼。十道題，看看你還認不認得出正常的句子。
+  </p>
+  <button class="btn-start" onclick="startQuiz()">我準備好了</button>
+
+  <div class="sample-jargons">
+    <span>根因</span><span>抓手</span><span>落地</span><span>倒逼</span><span>閉環</span>
+    <span>賦能</span><span>對齊</span><span>顆粒度</span><span>路徑</span><span>賽道</span>
+    <span>收斂</span><span>口徑</span><span>覆現</span><span>打穿</span><span>拉齊</span>
+  </div>
+</section>
+
+<!-- ══ QUIZ ════════════════════════════════════════ -->
+<section id="quiz">
+  <div class="quiz-header" style="max-width:760px;width:100%">
+    <div class="quiz-progress">Q <strong id="qNum">1</strong> / 10</div>
+    <div class="quiz-progress"><strong id="scoreDisplay">0</strong> pts</div>
+  </div>
+  <div class="progress-bar" style="max-width:760px;width:100%">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <p class="quiz-question">哪一句是廢話？</p>
+  <h2 class="quiz-prompt" id="quizPrompt">Loading…</h2>
+
+  <div class="choices">
+    <button class="choice-btn" id="choiceA" onclick="answer(0)">
+      <span class="label">A</span>
+      <span id="textA"></span>
+    </button>
+    <button class="choice-btn" id="choiceB" onclick="answer(1)">
+      <span class="label">B</span>
+      <span id="textB"></span>
+    </button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <button class="btn-next" id="btnNext" onclick="nextQuestion()">下一題 →</button>
+</section>
+
+<!-- ══ RESULT ══════════════════════════════════════ -->
+<section id="result">
+  <div id="score-card">
+    <div class="score-label">你的得分</div>
+    <div class="score-number" id="finalScore">0</div>
+    <div class="score-total">/ 100</div>
+    <div class="score-verdict" id="verdict"></div>
+    <div class="score-desc" id="verdictDesc"></div>
+    <div class="watermark">gpt-jargons · 2026</div>
+  </div>
+
+  <div class="result-actions">
+    <button class="btn-share" onclick="shareScore()">截圖</button>
+    <button class="btn-retry" onclick="retryQuiz()">再試一次</button>
+  </div>
+</section>
+
+<script>
+// ── Quiz Data ──────────────────────────────────────
+// Each question: { jargon: "GPT說的話", normal: "正常人說的話", explanation: "..." }
+const ALL_QUESTIONS = [
+  {
+    jargon:  "我們需要找到這個問題的根因，才能在業務層面形成真正的抓手。",
+    normal:  "我們需要找到這個問題的根本原因，才能真正解決它。",
+    note:    "「根因」和「抓手」是標準黑話雙殺"
+  },
+  {
+    jargon:  "這個方案還需要進一步落地，我們要先拉齊各方口徑再推進。",
+    normal:  "這個方案還需要進一步執行，我們先統一各方說法再推進。",
+    note:    "「落地」「拉齊口徑」連用，GPT最愛"
+  },
+  {
+    jargon:  "目前的數據已經形成了閉環，接下來要做的是打穿這條路徑。",
+    normal:  "目前的數據已成一套完整流程，接下來要徹底走通這條路。",
+    note:    "「閉環」「打穿」「路徑」三連"
+  },
+  {
+    jargon:  "市場的變化倒逼我們重新思考整個賽道的頂層設計。",
+    normal:  "市場的變化迫使我們重新思考整個行業的整體策略。",
+    note:    "「倒逼」是最具代表性的黑話動詞"
+  },
+  {
+    jargon:  "這個需求的顆粒度太粗，建議先收斂再賦能給下游團隊。",
+    normal:  "這個需求太模糊，建議先細化再交給下游團隊處理。",
+    note:    "「顆粒度」「收斂」「賦能」，每個字都在賣弄"
+  },
+  {
+    jargon:  "我們要對齊認知，確保這件事的邊界和定義在全鏈路上是一致的。",
+    normal:  "我們要統一理解，確保這件事的範圍和定義在整個流程中是一致的。",
+    note:    "「對齊認知」「全鏈路」是會議室常客"
+  },
+  {
+    jargon:  "這個bug先覆現一下，看看是不是可以在端側直接解決掉。",
+    normal:  "這個bug先重現一下，看看能不能直接在設備端解決。",
+    note:    "「覆現」是「重現」的黑話替身"
+  },
+  {
+    jargon:  "我們的目標是把這個功能做到極致，讓用戶有超預期的體驗。",
+    normal:  "我們的目標是把這個功能做得非常好，讓用戶覺得驚喜。",
+    note:    "「極致」「超預期」是互聯網的裝飾詞"
+  },
+  {
+    jargon:  "接下來我們要聚焦核心場景，把這條業務鏈路完全打通。",
+    normal:  "接下來我們要專注主要使用情境，把這條業務流程完全跑通。",
+    note:    "「聚焦」「打通」「鏈路」三件套"
+  },
+  {
+    jargon:  "這個問題需要橫向拉通相關方，形成合力才能真正落盤。",
+    normal:  "這個問題需要協調相關各方，大家一起努力才能真正完成。",
+    note:    "「拉通」「合力」「落盤」，黑話大禮包"
+  }
+];
+
+// ── State ──────────────────────────────────────────
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  questions = shuffle(ALL_QUESTIONS).slice(0, 10);
+  current = 0;
+  score = 0;
+  answered = false;
+
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  const quizEl = document.getElementById('quiz');
+  quizEl.style.display = 'flex';
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  answered = false;
+
+  // Randomize which side (A or B) gets the jargon
+  const jargonSide = Math.random() < 0.5 ? 0 : 1;
+
+  const btnA = document.getElementById('choiceA');
+  const btnB = document.getElementById('choiceB');
+
+  document.getElementById('textA').textContent = jargonSide === 0 ? q.jargon : q.normal;
+  document.getElementById('textB').textContent = jargonSide === 1 ? q.jargon : q.normal;
+
+  btnA.dataset.isJargon = jargonSide === 0 ? '1' : '0';
+  btnB.dataset.isJargon = jargonSide === 1 ? '1' : '0';
+
+  btnA.className = 'choice-btn';
+  btnB.className = 'choice-btn';
+  btnA.disabled = false;
+  btnB.disabled = false;
+
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btnNext').style.display = 'none';
+
+  document.getElementById('qNum').textContent = current + 1;
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('progressFill').style.width = `${(current / 10) * 100}%`;
+  document.getElementById('quizPrompt').textContent = '哪一句是 GPT 黑話？';
+}
+
+function answer(side) {
+  if (answered) return;
+  answered = true;
+
+  const btnA = document.getElementById('choiceA');
+  const btnB = document.getElementById('choiceB');
+  const chosen = side === 0 ? btnA : btnB;
+  const other  = side === 0 ? btnB : btnA;
+  const isCorrect = chosen.dataset.isJargon === '1';
+
+  btnA.disabled = true;
+  btnB.disabled = true;
+
+  const fb = document.getElementById('feedback');
+
+  const correctMessages = [
+    '✓ 對，那句話說了等於沒說',
+    '✓ 你還沒被同化',
+    '✓ 正確。翻譯成人話只需要五個字',
+    '✓ 沒錯。那句話每個字都認識，合在一起不知道在說什麼',
+    '✓ 答對了。這種句子通常出現在需要看起來很忙的時候',
+    '✓ 正確。那句話的資訊密度是零',
+    '✓ 對。把那句話刪掉，意思完全一樣',
+    '✓ 你還記得正常的句子長什麼樣',
+    '✓ 沒錯。那句話的作者可能自己也不知道想說什麼',
+  ];
+  const wrongMessages = [
+    `✗ 反了。${questions[current].note}`,
+    `✗ 你被騙了。${questions[current].note}`,
+    `✗ 不對。${questions[current].note}`,
+  ];
+
+  if (isCorrect) {
+    score += 10;
+    chosen.classList.add('correct');
+    fb.textContent = correctMessages[Math.floor(Math.random() * correctMessages.length)];
+    fb.className = 'feedback good';
+  } else {
+    chosen.classList.add('wrong');
+    other.classList.add('reveal-correct');
+    fb.textContent = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+    fb.className = 'feedback bad';
+  }
+
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('btnNext').style.display = 'inline-block';
+  document.getElementById('btnNext').textContent = current < 9 ? '繼續' : '結束這場折磨';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= 10) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ── Verdict logic — YOUR TURN ─────────────────────
+// (see comment below)
+function getVerdict(score) {
+  if (score === 100) return {
+    verdict: "你還會說人話",
+    desc: "十題全對。你大概是少數還記得句子可以直接表達意思的人。享受這種清醒，因為它會消失的。"
+  };
+  if (score >= 80) return {
+    verdict: "勉強及格",
+    desc: "大部分沒被騙到，但你已經知道「倒逼」是什麼意思了，這本身就說明問題。"
+  };
+  if (score >= 60) return {
+    verdict: "有點搖擺",
+    desc: "你偶爾能分辨，偶爾分不清。再過幾個月，你可能就會在日常對話裡說出「我們需要對齊一下」。"
+  };
+  if (score >= 40) return {
+    verdict: "已經半淪陷",
+    desc: "這個分數說明你聽慣了這種話，已經很難判斷哪句是正常的。建議試著用不超過十個字回答別人的問題。"
+  };
+  if (score >= 20) return {
+    verdict: "你就是來源",
+    desc: "你可能就是那個在會議裡說「我們要打通這條鏈路」的人。你周圍的人其實都聽不懂，只是不說。"
+  };
+  return {
+    verdict: "完全聽不懂人話了",
+    desc: "0分。不是說你笨，是說你已經在另一個語言維度裡了。那裡每個人都在「落地」，沒有人說完整的句子。"
+  };
+}
+// ─────────────────────────────────────────────────
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  const resultEl = document.getElementById('result');
+  resultEl.style.display = 'flex';
+
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('progressFill').style.width = '100%';
+
+  const { verdict, desc } = getVerdict(score);
+  document.getElementById('verdict').textContent = verdict;
+  document.getElementById('verdictDesc').textContent = desc;
+}
+
+function retryQuiz() {
+  document.getElementById('result').style.display = 'none';
+  startQuiz();
+}
+
+async function shareScore() {
+  const card = document.getElementById('score-card');
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#181818',
+      scale: 2,
+      useCORS: true
+    });
+    const link = document.createElement('a');
+    link.download = `gpt-jargon-score-${score}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (e) {
+    alert('截圖失敗，請手動截圖 🙃');
+  }
+}
+</script>
+</body>
+</html>
